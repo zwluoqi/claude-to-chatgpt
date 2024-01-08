@@ -16,6 +16,21 @@ func OptionsHandler(c *gin.Context) {
 	})
 }
 
+func ModelsHandler(c *gin.Context) {
+	// 直接构建 JSON 数据
+	data := gin.H{
+		"object": "list",
+		"data": []map[string]string{
+			{"id": "claude-2.1", "root": "claude-2"},
+			{"id": "claude-2.0", "root": "claude-2"},
+			{"id": "claude-instant-1.2", "root": "claude-1"},
+		},
+	}
+
+	// 返回 JSON 响应
+	c.JSON(200, data)
+}
+
 func ChatCompletionsHandler(c *gin.Context) {
 	var chatCompletionRequest model.ChatCompletionRequest
 	err := c.BindJSON(&chatCompletionRequest)

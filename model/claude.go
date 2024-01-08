@@ -22,7 +22,7 @@ type MessageLimit struct {
 	Type string `json:"type"`
 }
 
-func NewChatMessageRequest(text, history string) *ChatMessageRequest {
+func NewChatMessageRequest(text, history string, model string) *ChatMessageRequest {
 	var attachments []Attachments
 	if history != "" {
 		attachments = append(attachments, Attachments{
@@ -34,7 +34,7 @@ func NewChatMessageRequest(text, history string) *ChatMessageRequest {
 
 	}
 	return &ChatMessageRequest{
-		Completion:       NewCompletion(text),
+		Completion:       NewCompletion(text, model),
 		OrganizationUuid: "",
 		ConversationUuid: "",
 		Text:             text,
@@ -49,11 +49,11 @@ type Completion struct {
 	Incremental bool   `json:"incremental"`
 }
 
-func NewCompletion(prompt string) *Completion {
+func NewCompletion(prompt string, model string) *Completion {
 	return &Completion{
 		Prompt:      prompt,
 		Timezone:    "Asia/Shanghai",
-		Model:       "claude-2.1",
+		Model:       model,
 		Incremental: true,
 	}
 }

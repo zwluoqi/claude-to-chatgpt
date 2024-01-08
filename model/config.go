@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strings"
 	"sync"
 )
@@ -19,6 +20,7 @@ type Claude struct {
 func (c *Claude) GetSessionKey() (sessionKey string) {
 	c.Lock.Lock()
 	defer c.Lock.Unlock()
+	fmt.Println(len(c.SessionKeys))
 
 	if len(c.SessionKeys) == 0 {
 		return

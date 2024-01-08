@@ -10,6 +10,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/spf13/viper v1.16.0
 	gopkg.in/yaml.v3 v3.0.1
+  github.com/pkoukk/tiktoken-go v0.1.5
 )
 
 require (
