@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/oldweipro/claude-to-chatgpt/global"
 	"github.com/oldweipro/claude-to-chatgpt/model"
+	// "github.com/replit/database-go"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -64,34 +65,37 @@ func RequestClaudeToResponse(c *gin.Context, params *model.ChatMessageRequest, s
 	// 	DeleteChatConversations(cconveration.UUID, sessionKey)
 	// }
 
-	params.Completion.Model = organization.ClaudeModel
+	params.Model = organization.ClaudeModel
 
 	randomUrl := getRandomUrl()
 	// randomUrl := "https://claude.ai"
-	appendMessageApi := randomUrl + "/api/append_message"
 
 	// 设置两个参数
 	newStringUuid := uuid.NewString()
-	randomUrl = getRandomUrl()
+	// randomUrl = getRandomUrl()
 	_, err = CreateChatConversations(randomUrl, newStringUuid, sessionKey)
 	if err != nil {
 		HandleErrorResponse(c, err.Error())
 		return
 	}
 
+	appendMessageApi := fmt.Sprintf("%s/api/organizations/%s/chat_conversations/%s/completion", randomUrl, organization.Uuid, newStringUuid)
+	// appendMessageApi := randomUrl + "/api/append_message"
+
 	defer func(newStringUuid, sessionKey string) {
 		DeleteChatConversations(newStringUuid, sessionKey)
 	}(newStringUuid, sessionKey)
 
-	params.ConversationUuid = newStringUuid
-	params.OrganizationUuid = organization.Uuid
+	// params.ConversationUuid = newStringUuid
+	// params.OrganizationUuid = organization.Uuid
 	// 发起请求
 	marshal, err := json.Marshal(params)
 	if err != nil {
 		HandleErrorResponse(c, err.Error())
 		return
 	}
-	fmt.Println("RequestClaudeToResponse:", newStringUuid)
+	fmt.Println("RequestClaudeToResponse:", appendMessageApi)
+	// fmt.Println("RequestClaudeToResponse Content:", marshal)
 	request, err := http2.NewRequest(http2.MethodPost, appendMessageApi, bytes.NewBuffer(marshal))
 	if err != nil {
 		HandleErrorResponse(c, err.Error())
@@ -378,6 +382,15 @@ func LoadCache() error {
 		return err // 文件可能不存在或无法读取
 	}
 
+	// data, err := database.Get("sessionKeys")
+	//  if err != nil{
+	//    data, err := ioutil.ReadFile(cacheFile)
+	//    if err != nil {
+	//    	return err // 文件可能不存在或无法读取
+	//    }
+	//    database.Set("sessionKeys",data)
+	//  }
+
 	return json.Unmarshal(data, &cache)
 }
 
@@ -391,6 +404,7 @@ func SaveCache() error {
 		return err
 	}
 
+	// database.Set("sessionKeys",data)
 	return ioutil.WriteFile(cacheFile, data, 0644)
 }
 
@@ -604,25 +618,12 @@ func RequestAccountModel(sessionKey string) (string, error) {
 func getRandomUrl() string {
 	// 定义一个包含多个 URL 的数组
 	urls := []string{
-		"https://claudeproxy1.replit.app",
-		"https://claudeproxy2.replit.app",
-		"https://claudeproxy3.replit.app",
-		"https://claudeproxy4.replit.app",
-		"https://claudeproxy5.replit.app",
-		"https://claudeproxy6.replit.app",
-		"https://claudeproxy7.replit.app",
-		"https://claudeproxy8.replit.app",
-		"https://claudeproxy9.replit.app",
-		"https://claudeproxy10.replit.app",
-		"https://claudeproxy11.replit.app",
-		"https://claudeproxy12.replit.app",
-		"https://claudeproxy13.replit.app",
-		"https://claudeproxy14.replit.app",
-		"https://claudeproxy15.replit.app",
-		"https://claudeproxy16.replit.app",
-		"https://claudeproxy17.replit.app",
-		"https://claudeproxy18.replit.app",
-		"https://claudeproxy19.replit.app",
+		"https://claude-web-proxy-deply-1.replit.app",
+		"https://claude-web-proxy-deply-2.replit.app",
+		"https://claude-web-proxy-deply-3.replit.app",
+		"https://claude-web-proxy-deply-4.replit.app",
+		"https://claude-web-proxy-deply-5.replit.app",
+		// "https://defa2cdd-2bb1-45e1-9ed2-6e0df20c796d-00-2vxvss900mpxj.janeway.replit.dev",
 	}
 
 	// 初始化随机数生成器

@@ -3,11 +3,15 @@ package model
 import "time"
 
 type ChatMessageRequest struct {
-	Completion       *Completion   `json:"completion"`
-	OrganizationUuid string        `json:"organization_uuid"`
-	ConversationUuid string        `json:"conversation_uuid"`
-	Text             string        `json:"text"`
-	Attachments      []Attachments `json:"attachments"`
+	// Completion       *Completion   `json:"completion"`
+	// OrganizationUuid string        `json:"organization_uuid"`
+	// ConversationUuid string        `json:"conversation_uuid"`
+	Prompt   string `json:"prompt"`
+	Timezone string `json:"timezone"`
+	Model    string `json:"model"`
+	// Text        string        `json:"text"`
+	Attachments []Attachments `json:"attachments"`
+	Files       []string      `json:"files"`
 }
 type ChatMessageResponse struct {
 	Completion   string       `json:"completion"`
@@ -34,11 +38,14 @@ func NewChatMessageRequest(text, history string, model string) *ChatMessageReque
 
 	}
 	return &ChatMessageRequest{
-		Completion:       NewCompletion(text, model),
-		OrganizationUuid: "",
-		ConversationUuid: "",
-		Text:             text,
-		Attachments:      attachments,
+		// Completion:       NewCompletion(text, model),
+		// OrganizationUuid: "",
+		// ConversationUuid: "",
+		Model:       model,
+		Prompt:      text,
+		Attachments: attachments,
+		Files:       []string{},
+		Timezone:    "Asia/Shanghai",
 	}
 }
 

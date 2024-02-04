@@ -18,7 +18,7 @@ func main() {
 	})
 	r.OPTIONS("/v1/chat/completions", handles.OptionsHandler)
 	r.POST("/v1/chat/completions", handles.ChatCompletionsHandler)
-  r.GET("v1/models",handles.ModelsHandler)
+	r.GET("v1/models", handles.ModelsHandler)
 	err := r.Run(":8787")
 	if err != nil {
 		return
