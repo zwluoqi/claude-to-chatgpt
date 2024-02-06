@@ -16,6 +16,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -171,6 +172,9 @@ func RequestClaudeToResponse(c *gin.Context, params *model.ChatMessageRequest, s
 		if len(line) < 6 {
 			continue
 		}
+		if strings.HasPrefix(line, "event:") {
+			continue
+		}
 		lineCount += 1
 		line = line[6:]
 		if isRole {
@@ -184,6 +188,7 @@ func RequestClaudeToResponse(c *gin.Context, params *model.ChatMessageRequest, s
 		if stream {
 			resp, _ := json.Marshal(completionResponse)
 			responseString := "data: " + string(resp) + "\n\n"
+			// fmt.Println("responseString:", responseString)
 			c.Writer.WriteString(responseString)
 			c.Writer.Flush()
 		}
