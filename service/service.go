@@ -65,8 +65,14 @@ func RequestClaudeToResponse(c *gin.Context, params *model.ChatMessageRequest, s
 	// for _, cconveration := range converations {
 	// 	DeleteChatConversations(cconveration.UUID, sessionKey)
 	// }
+	if params.Model == "claude-v1.3" {
+		params.Model = "claude-1.3"
+	}
+	if params.Model == "claude-1.3" || params.Model == "claude-2.1-acorn" || params.Model == "claude-2.1-pasta" {
 
-	params.Model = organization.ClaudeModel
+	} else {
+		params.Model = organization.ClaudeModel
+	}
 
 	randomUrl := getRandomUrl()
 	// randomUrl := "https://claude.ai"
@@ -95,7 +101,7 @@ func RequestClaudeToResponse(c *gin.Context, params *model.ChatMessageRequest, s
 		HandleErrorResponse(c, err.Error())
 		return
 	}
-	fmt.Println("RequestClaudeToResponse:", appendMessageApi)
+	fmt.Println("RequestClaudeToResponse:", appendMessageApi, params.Model)
 	// fmt.Println("RequestClaudeToResponse Content:", marshal)
 	request, err := http2.NewRequest(http2.MethodPost, appendMessageApi, bytes.NewBuffer(marshal))
 	if err != nil {
@@ -131,7 +137,7 @@ func RequestClaudeToResponse(c *gin.Context, params *model.ChatMessageRequest, s
 	}
 	reader := bufio.NewReader(response.Body)
 	var originalResponse model.ChatMessageResponse
-	var isRole = true
+	// var isRole = true
 	fmt.Println("stream:", stream)
 	if stream {
 		// Response content type is text/event-stream
@@ -175,25 +181,24 @@ func RequestClaudeToResponse(c *gin.Context, params *model.ChatMessageRequest, s
 		if strings.HasPrefix(line, "event:") {
 			continue
 		}
+
+		// 将要解析到的结构体变量
+		var errResp ErrorResponse
+
+		// 解析JSON到结构体
+		err = json.Unmarshal([]byte(line), &errResp)
+		if err == nil {
+			// fmt.Println("err:", errResp.Error.Message)
+			HandleErrorResponse(c, errResp.Error.Message)
+			return
+		}
+
 		lineCount += 1
 		line = line[6:]
-		if isRole {
-			completionResponse.Choices[0].Delta.Role = "assistant"
-		} else {
-			completionResponse.Choices[0].Delta.Content = originalResponse.Completion
-			fullResponseText += originalResponse.Completion
-		}
-		completionResponse.Choices[0].Delta.Role = ""
-		isRole = false
-		if stream {
-			resp, _ := json.Marshal(completionResponse)
-			responseString := "data: " + string(resp) + "\n\n"
-			// fmt.Println("responseString:", responseString)
-			c.Writer.WriteString(responseString)
-			c.Writer.Flush()
-		}
+
 		err = json.Unmarshal([]byte(line), &originalResponse)
 		if err != nil {
+			fmt.Println("originalResponse:", err)
 			continue
 		}
 		if originalResponse.Stop != "" && stream {
@@ -206,6 +211,25 @@ func RequestClaudeToResponse(c *gin.Context, params *model.ChatMessageRequest, s
 			defer response.Body.Close()
 			break
 		}
+
+		// if isRole {
+		// 	completionResponse.Choices[0].Delta.Role = "assistant"
+		// } else
+		{
+			completionResponse.Choices[0].Delta.Content = originalResponse.Completion
+			fullResponseText += originalResponse.Completion
+			// fmt.Println("originalResponse.Completion:", originalResponse.Completion)
+		}
+		completionResponse.Choices[0].Delta.Role = ""
+		// isRole = false
+		if stream {
+			resp, _ := json.Marshal(completionResponse)
+			responseString := "data: " + string(resp) + "\n\n"
+			// fmt.Println("responseString:", responseString)
+			c.Writer.WriteString(responseString)
+			c.Writer.Flush()
+		}
+
 	}
 	fmt.Println("stream end:")
 	if stream {
@@ -514,7 +538,7 @@ func GetUUIDAndModel(sessionKey string) (*OrginValue, error) {
 		}
 	}
 
-	claudeModel, err := RequestAccountModel(sessionKey)
+	claudeModel, err := RequestAccountModel(sessionKey, organization.Uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -572,11 +596,11 @@ func RequestOrganizations(sessionKey string) (*model.OrganizationsResponse, erro
 	return &response[0], err
 }
 
-func RequestAccountModel(sessionKey string) (string, error) {
+func RequestAccountModel(sessionKey string, Uuid string) (string, error) {
 
 	randomUrl := getRandomUrl()
 
-	organizationsApi := randomUrl + "/api/auth/current_account"
+	organizationsApi := randomUrl + "/api/account/statsig/" + Uuid
 	fmt.Println(organizationsApi, sessionKey)
 	request, err := http2.NewRequest(http2.MethodGet, organizationsApi, nil)
 
@@ -608,9 +632,9 @@ func RequestAccountModel(sessionKey string) (string, error) {
 	}
 
 	// Navigate through the map to get the nested data
-	account := result["account"].(map[string]interface{})
-	statsig := account["statsig"].(map[string]interface{})
-	values := statsig["values"].(map[string]interface{})
+	// account := result["account"].(map[string]interface{})
+	// statsig := account["statsig"].(map[string]interface{})
+	values := result["values"].(map[string]interface{})
 	dynamicConfigs := values["dynamic_configs"].(map[string]interface{})
 	config := dynamicConfigs["6zA9wvTedwkzjLxWy9PVe7yydI00XDQ6L5Fejjq/2o8="].(map[string]interface{})
 	value := config["value"].(map[string]interface{})
@@ -628,7 +652,12 @@ func getRandomUrl() string {
 		"https://claude-web-proxy-deply-3.replit.app",
 		"https://claude-web-proxy-deply-4.replit.app",
 		"https://claude-web-proxy-deply-5.replit.app",
-		// "https://defa2cdd-2bb1-45e1-9ed2-6e0df20c796d-00-2vxvss900mpxj.janeway.replit.dev",
+		"https://claude-web-proxy-deply-6.replit.app",
+		"https://claude-web-proxy-deply-7.replit.app",
+		"https://claude-web-proxy-deply-8.replit.app",
+		"https://claude-web-proxy-deply-9.replit.app",
+		"https://claude-web-proxy-deply-10.replit.app",
+		// "https://defa2cdd-2bb1-45e1-9ed2-6e0df20c796d-00-2vxvss900mpxj.janeway.repl.co",
 	}
 
 	// 初始化随机数生成器

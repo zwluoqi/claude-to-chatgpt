@@ -38,13 +38,13 @@ func OpenaiToClaudeParams(chatCompletionRequest model.ChatCompletionRequest) *mo
 	prompt += "\n\nAssistant:"
 
 	// Append random characters if history length is less than 10,000 characters
-	// const desiredLength = 8192
-	// currentLength := len(prompt)
-	// if currentLength < desiredLength {
-	// 	gibberishLength := desiredLength - currentLength
-	// 	gibberish := generateRandomCharacters(gibberishLength)
-	// 	prompt = gibberish + prompt
-	// }
+	const desiredLength = 8192
+	currentLength := len(prompt)
+	if currentLength < desiredLength {
+		gibberishLength := desiredLength - currentLength
+		gibberish := generateRandomCharacters(gibberishLength)
+		prompt = gibberish + prompt
+	}
 
-	return model.NewChatMessageRequest("", prompt, "claude-2.0")
+	return model.NewChatMessageRequest("", prompt, chatCompletionRequest.Model)
 }

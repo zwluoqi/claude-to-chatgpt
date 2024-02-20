@@ -24,6 +24,9 @@ func ModelsHandler(c *gin.Context) {
 			{"id": "claude-2.1", "root": "claude-2"},
 			{"id": "claude-2.0", "root": "claude-2"},
 			{"id": "claude-instant-1.2", "root": "claude-1"},
+			{"id": "claude-1.3", "root": "claude-1"},
+			{"id": "claude-2.1-acorn", "root": "claude-2"},
+			{"id": "claude-2.1-pasta", "root": "claude-2"},
 		},
 	}
 
